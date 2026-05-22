@@ -17,5 +17,5 @@ export default defineConfig({
   tanstackStart: {
     server: { entry: "server" },
   },
-  cloudflare: !process.env.VERCEL, // Disable Cloudflare plugin when deploying on Vercel
+  cloudflare: process.env.VERCEL ? false : undefined, // Disable Cloudflare plugin when deploying on Vercel
 });
