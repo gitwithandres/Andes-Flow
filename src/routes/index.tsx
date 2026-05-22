@@ -36,8 +36,15 @@ function LandingPage() {
       {/* Hero Section */}
       <section className="relative overflow-hidden pt-20 pb-28 lg:pt-32 lg:pb-40 min-h-[85vh] flex items-center">
         {/* Background Video */}
-        <div className="absolute inset-0 -z-20 w-full h-full overflow-hidden">
-          <video autoPlay loop muted playsInline className="w-full h-full object-cover">
+        <div className="absolute inset-0 -z-20 w-full h-full overflow-hidden bg-gradient-to-b from-primary/20 to-primary/40">
+          <video
+            autoPlay
+            loop
+            muted
+            playsInline
+            preload="auto"
+            className="w-full h-full object-cover max-sm:object-[50%_20%]"
+          >
             <source src="/videofondohero.mp4" type="video/mp4" />
           </video>
           {/* Visible overlay shadow to make text highly legible */}
