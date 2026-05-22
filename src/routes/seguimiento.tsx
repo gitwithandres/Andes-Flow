@@ -13,8 +13,8 @@ export const Route = createFileRoute("/seguimiento")({
   head: () => ({
     meta: [
       { title: "Seguimiento de Producción — ANDES" },
-      { name: "description", content: "Rastrea el progreso de tu material didáctico." }
-    ]
+      { name: "description", content: "Rastrea el progreso de tu material didáctico." },
+    ],
   }),
   component: SeguimientoPage,
 });
@@ -46,24 +46,24 @@ function SeguimientoPage() {
 
     // Búsqueda real en Supabase
     const { data, error } = await supabase
-      .from('production_requests')
-      .select('*')
-      .eq('id', requestId.trim().toUpperCase())
+      .from("production_requests")
+      .select("*")
+      .eq("id", requestId.trim().toUpperCase())
       .single();
 
     if (error || !data) {
       toast.error("No se encontró la solicitud", {
-        description: "Asegúrate de que el ID sea correcto (ej: SOL-123)"
+        description: "Asegúrate de que el ID sea correcto (ej: SOL-123)",
       });
     } else {
       setResult(data);
       // Verificar si ya calificó
       const { data: ratingData } = await supabase
-        .from('product_ratings')
-        .select('*')
-        .eq('request_id', data.id)
+        .from("product_ratings")
+        .select("*")
+        .eq("request_id", data.id)
         .single();
-        
+
       if (ratingData) {
         setHasRated(true);
       }
@@ -74,12 +74,18 @@ function SeguimientoPage() {
   // Helper para el color de la barra de progreso
   const getProgressColor = (status: string) => {
     switch (status) {
-      case "Recibida": return "bg-blue-500";
-      case "En Produccion": return "bg-yellow-500";
-      case "Revision de Calidad": return "bg-purple-500";
-      case "Empaque y Transporte": return "bg-orange-500";
-      case "Entregada": return "bg-green-500";
-      default: return "bg-primary";
+      case "Recibida":
+        return "bg-blue-500";
+      case "En Produccion":
+        return "bg-yellow-500";
+      case "Revision de Calidad":
+        return "bg-purple-500";
+      case "Empaque y Transporte":
+        return "bg-orange-500";
+      case "Entregada":
+        return "bg-green-500";
+      default:
+        return "bg-primary";
     }
   };
 
@@ -88,16 +94,18 @@ function SeguimientoPage() {
       toast.error("Por favor selecciona una calificación");
       return;
     }
-    
+
     setSubmittingRating(true);
-    const { error } = await supabase.from('product_ratings').insert([{
-      request_id: result.id,
-      rating,
-      feedback
-    }]);
+    const { error } = await supabase.from("product_ratings").insert([
+      {
+        request_id: result.id,
+        rating,
+        feedback,
+      },
+    ]);
 
     setSubmittingRating(false);
-    
+
     if (error) {
       toast.error("Error al guardar la calificación");
     } else {
@@ -120,29 +128,39 @@ function SeguimientoPage() {
         <div className="inline-flex h-16 w-16 items-center justify-center rounded-full bg-primary/10 mb-6">
           <Activity className="h-8 w-8 text-primary" aria-hidden />
         </div>
-        <h1 className="text-4xl font-extrabold text-foreground tracking-tight">Seguimiento de Fabricación</h1>
+        <h1 className="text-4xl font-extrabold text-foreground tracking-tight">
+          Seguimiento de Fabricación
+        </h1>
         <p className="mt-4 text-lg text-muted-foreground max-w-2xl mx-auto">
-          Ingresa el ID de tu solicitud para conocer en tiempo real el porcentaje de avance y el estado de tu material.
+          Ingresa el ID de tu solicitud para conocer en tiempo real el porcentaje de avance y el
+          estado de tu material.
         </p>
       </div>
 
       <Card className="shadow-lg border-border/50 max-w-2xl mx-auto overflow-hidden">
         <CardHeader className="bg-muted/30 pb-6">
           <CardTitle className="text-lg">Buscar Solicitud</CardTitle>
-          <CardDescription>El ID lo encuentras en el correo de confirmación de tu pedido.</CardDescription>
+          <CardDescription>
+            El ID lo encuentras en el correo de confirmación de tu pedido.
+          </CardDescription>
         </CardHeader>
         <CardContent className="pt-6">
           <form onSubmit={handleSearch} className="flex gap-3">
             <div className="relative flex-1">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
-              <Input 
+              <Input
                 value={requestId}
                 onChange={(e) => setRequestId(e.target.value)}
-                placeholder="Ej. SOL-001" 
+                placeholder="Ej. SOL-001"
                 className="pl-10 h-12 text-lg font-mono tracking-wider rounded-xl uppercase"
               />
             </div>
-            <Button type="submit" size="lg" disabled={loading} className="h-12 px-8 rounded-xl font-bold">
+            <Button
+              type="submit"
+              size="lg"
+              disabled={loading}
+              className="h-12 px-8 rounded-xl font-bold"
+            >
               {loading ? <Loader2 className="w-5 h-5 animate-spin" /> : "Rastrear"}
             </Button>
           </form>
@@ -155,41 +173,58 @@ function SeguimientoPage() {
                     <Package className="w-5 h-5 text-primary" />
                     {result.resource}
                   </h3>
-                  <p className="text-sm text-muted-foreground mt-1">Institución: {result.institution}</p>
+                  <p className="text-sm text-muted-foreground mt-1">
+                    Institución: {result.institution}
+                  </p>
                 </div>
-                <Badge variant="outline" className="text-base px-4 py-1.5 font-bold shadow-sm self-start">
+                <Badge
+                  variant="outline"
+                  className="text-base px-4 py-1.5 font-bold shadow-sm self-start"
+                >
                   {result.status}
                 </Badge>
               </div>
 
               <div className="bg-muted/30 rounded-xl p-6 border border-border/50">
                 <div className="flex justify-between items-end mb-3">
-                  <span className="text-sm font-semibold text-muted-foreground uppercase tracking-wider">Porcentaje de Fabricación</span>
-                  <span className="text-3xl font-black text-primary">{result.progress_percentage || 0}%</span>
+                  <span className="text-sm font-semibold text-muted-foreground uppercase tracking-wider">
+                    Porcentaje de Fabricación
+                  </span>
+                  <span className="text-3xl font-black text-primary">
+                    {result.progress_percentage || 0}%
+                  </span>
                 </div>
-                
+
                 <div className="relative w-full h-4 bg-muted rounded-full overflow-hidden">
-                  <div 
+                  <div
                     className={`absolute top-0 left-0 h-full transition-all duration-1000 ease-out ${getProgressColor(result.status)}`}
                     style={{ width: `${result.progress_percentage || 0}%` }}
                   />
                 </div>
-                
+
                 <div className="mt-6 grid grid-cols-2 sm:grid-cols-4 gap-4 text-center">
                   <div className="space-y-1">
-                    <div className={`w-3 h-3 mx-auto rounded-full ${result.progress_percentage >= 0 ? 'bg-blue-500' : 'bg-muted'}`} />
+                    <div
+                      className={`w-3 h-3 mx-auto rounded-full ${result.progress_percentage >= 0 ? "bg-blue-500" : "bg-muted"}`}
+                    />
                     <p className="text-xs font-medium text-muted-foreground">Recibida</p>
                   </div>
                   <div className="space-y-1">
-                    <div className={`w-3 h-3 mx-auto rounded-full ${result.progress_percentage >= 20 ? 'bg-yellow-500' : 'bg-muted'}`} />
+                    <div
+                      className={`w-3 h-3 mx-auto rounded-full ${result.progress_percentage >= 20 ? "bg-yellow-500" : "bg-muted"}`}
+                    />
                     <p className="text-xs font-medium text-muted-foreground">Fabricación</p>
                   </div>
                   <div className="space-y-1">
-                    <div className={`w-3 h-3 mx-auto rounded-full ${result.progress_percentage >= 80 ? 'bg-purple-500' : 'bg-muted'}`} />
+                    <div
+                      className={`w-3 h-3 mx-auto rounded-full ${result.progress_percentage >= 80 ? "bg-purple-500" : "bg-muted"}`}
+                    />
                     <p className="text-xs font-medium text-muted-foreground">Calidad</p>
                   </div>
                   <div className="space-y-1">
-                    <div className={`w-3 h-3 mx-auto rounded-full ${result.progress_percentage >= 100 ? 'bg-green-500' : 'bg-muted'}`} />
+                    <div
+                      className={`w-3 h-3 mx-auto rounded-full ${result.progress_percentage >= 100 ? "bg-green-500" : "bg-muted"}`}
+                    />
                     <p className="text-xs font-medium text-muted-foreground">Entregada</p>
                   </div>
                 </div>
@@ -198,15 +233,19 @@ function SeguimientoPage() {
               {/* RATING SECTION */}
               {result.status === "Entregada" && (
                 <div className="mt-8 bg-card border border-border shadow-sm rounded-xl p-6 text-center animate-in fade-in slide-in-from-bottom-4 duration-500">
-                  <h4 className="text-xl font-bold mb-2">¿Cómo calificarías este material didáctico?</h4>
-                  
+                  <h4 className="text-xl font-bold mb-2">
+                    ¿Cómo calificarías este material didáctico?
+                  </h4>
+
                   {hasRated ? (
                     <div className="py-6 space-y-4">
                       <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-green-100 text-green-600 mb-2">
                         <Star className="w-8 h-8 fill-current" />
                       </div>
                       <p className="text-lg font-medium text-foreground">¡Gracias por tu reseña!</p>
-                      <p className="text-muted-foreground text-sm">Tu opinión nos ayuda a mejorar nuestros recursos educativos para todos.</p>
+                      <p className="text-muted-foreground text-sm">
+                        Tu opinión nos ayuda a mejorar nuestros recursos educativos para todos.
+                      </p>
                     </div>
                   ) : (
                     <div className="mt-6 max-w-md mx-auto">
@@ -220,12 +259,12 @@ function SeguimientoPage() {
                             onMouseLeave={() => setHoverRating(0)}
                             onClick={() => setRating(star)}
                           >
-                            <Star 
+                            <Star
                               className={`w-10 h-10 ${
-                                star <= (hoverRating || rating) 
-                                  ? "fill-yellow-400 text-yellow-400" 
+                                star <= (hoverRating || rating)
+                                  ? "fill-yellow-400 text-yellow-400"
                                   : "text-muted-foreground/30"
-                              } transition-colors`} 
+                              } transition-colors`}
                             />
                           </button>
                         ))}
@@ -241,19 +280,22 @@ function SeguimientoPage() {
                           value={feedback}
                           onChange={(e) => setFeedback(e.target.value)}
                         />
-                        <Button 
-                          className="w-full h-11 font-bold" 
+                        <Button
+                          className="w-full h-11 font-bold"
                           onClick={handleSubmitRating}
                           disabled={submittingRating || rating === 0}
                         >
-                          {submittingRating ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : "Enviar Calificación"}
+                          {submittingRating ? (
+                            <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                          ) : (
+                            "Enviar Calificación"
+                          )}
                         </Button>
                       </div>
                     </div>
                   )}
                 </div>
               )}
-
             </div>
           )}
         </CardContent>

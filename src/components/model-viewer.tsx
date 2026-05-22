@@ -25,7 +25,6 @@ declare module "react" {
   }
 }
 
-
 interface Props {
   src: string;
   alt: string;

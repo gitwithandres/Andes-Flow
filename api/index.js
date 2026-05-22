@@ -46,9 +46,12 @@ async function sendWebResponse(res, webResponse) {
 
   webResponse.headers.forEach((value, key) => {
     if (key.toLowerCase() === "set-cookie") {
-      res.setHeader(key, typeof webResponse.headers.getSetCookie === "function" 
-        ? webResponse.headers.getSetCookie() 
-        : [value]);
+      res.setHeader(
+        key,
+        typeof webResponse.headers.getSetCookie === "function"
+          ? webResponse.headers.getSetCookie()
+          : [value],
+      );
     } else {
       res.setHeader(key, value);
     }

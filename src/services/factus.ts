@@ -1,8 +1,8 @@
 export async function getFactusToken() {
   const url = `${import.meta.env.VITE_FACTUS_API_URL}/oauth/token`;
-  
+
   const body = new URLSearchParams({
-    grant_type: 'password',
+    grant_type: "password",
     client_id: import.meta.env.VITE_FACTUS_CLIENT_ID,
     client_secret: import.meta.env.VITE_FACTUS_CLIENT_SECRET,
     username: import.meta.env.VITE_FACTUS_USERNAME,
@@ -10,10 +10,10 @@ export async function getFactusToken() {
   });
 
   const response = await fetch(url, {
-    method: 'POST',
+    method: "POST",
     headers: {
-      'Content-Type': 'application/x-www-form-urlencoded',
-      'Accept': 'application/json'
+      "Content-Type": "application/x-www-form-urlencoded",
+      Accept: "application/json",
     },
     body: body.toString(),
   });
@@ -21,7 +21,7 @@ export async function getFactusToken() {
   if (!response.ok) {
     const err = await response.text();
     console.error("Factus Token Error:", err);
-    throw new Error('Error al obtener token de Factus');
+    throw new Error("Error al obtener token de Factus");
   }
 
   const data = await response.json();
@@ -33,10 +33,10 @@ export async function createFactusInvoice(token: string, customerData: any, mate
   const url = `${import.meta.env.VITE_FACTUS_API_URL}/v1/bills/validate`;
 
   const price = 50000;
-  
+
   const invoicePayload = {
     reference_code: `ANDES-${Date.now()}`,
-    document: "01", 
+    document: "01",
     operation_type: "10",
     numbering_range_id: 8,
     observation: `Solicitud de material didáctico: ${material.name}`,
@@ -52,7 +52,7 @@ export async function createFactusInvoice(token: string, customerData: any, mate
       phone: customerData.phone,
       legal_organization_id: 2, // Natural (v1)
       tribute_id: 21,
-      municipality_id: 980 // Bogotá en v1
+      municipality_id: 980, // Bogotá en v1
     },
     items: [
       {
@@ -66,56 +66,54 @@ export async function createFactusInvoice(token: string, customerData: any, mate
         standard_code_id: 1,
         is_excluded: 0,
         tribute_id: 1, // IVA
-        withholding_taxes: []
-      }
-    ]
+        withholding_taxes: [],
+      },
+    ],
   };
 
   const response = await fetch(url, {
-    method: 'POST',
+    method: "POST",
     headers: {
-      'Content-Type': 'application/json',
-      'Accept': 'application/json',
-      'Authorization': `Bearer ${token}`
+      "Content-Type": "application/json",
+      Accept: "application/json",
+      Authorization: `Bearer ${token}`,
     },
-    body: JSON.stringify(invoicePayload)
+    body: JSON.stringify(invoicePayload),
   });
 
   if (!response.ok) {
     const err = await response.json();
     console.error("Factus Invoice Error:", err);
-    throw new Error('Error al crear la factura electrónica en Factus');
+    throw new Error("Error al crear la factura electrónica en Factus");
   }
 
   const data = await response.json();
   // El número de la factura suele venir en data.data.bill.number
-  const invoiceNumber = data?.data?.bill?.number || 'DESCONOCIDO';
+  const invoiceNumber = data?.data?.bill?.number || "DESCONOCIDO";
   return { ...data, success: true, simulated: false, number: invoiceNumber };
 }
 
 export async function downloadFactusPdf(token: string, number: string) {
-  if (number.startsWith('SIMULADA')) {
+  if (number.startsWith("SIMULADA")) {
     // Si la factura es simulada, no podemos descargarla del API, devolvemos null
     return null;
   }
 
   const url = `${import.meta.env.VITE_FACTUS_API_URL}/v1/bills/download-pdf/${number}`;
   const response = await fetch(url, {
-    method: 'GET',
+    method: "GET",
     headers: {
-      'Authorization': `Bearer ${token}`
-    }
+      Authorization: `Bearer ${token}`,
+    },
   });
 
   if (!response.ok) {
     const err = await response.text();
     console.error("Factus PDF Download Error:", err);
-    throw new Error('No se pudo descargar el PDF de la factura.');
+    throw new Error("No se pudo descargar el PDF de la factura.");
   }
 
   const data = await response.json();
   // Devuelve la base64 string
   return data?.data?.pdf_base_64_encoded || data?.pdf_base_64_encoded || null;
 }
-
-

@@ -14,7 +14,8 @@ export const Route = createFileRoute("/catalogo")({
       { title: "Marketplace 3D — ANDES" },
       {
         name: "description",
-        content: "Explora materiales didácticos y ayudas de accesibilidad con visor 3D interactivo.",
+        content:
+          "Explora materiales didácticos y ayudas de accesibilidad con visor 3D interactivo.",
       },
       { property: "og:title", content: "Marketplace 3D — ANDES" },
       {
@@ -47,9 +48,10 @@ function CatalogPage() {
           Marketplace Interactivo
         </h1>
         <p className="mt-4 max-w-2xl text-lg text-muted-foreground leading-relaxed">
-          Explora, rota y acerca cada material en 3D. Selecciona el recurso que necesitas y verifica su disponibilidad en tiempo real antes de solicitarlo.
+          Explora, rota y acerca cada material en 3D. Selecciona el recurso que necesitas y verifica
+          su disponibilidad en tiempo real antes de solicitarlo.
         </p>
-        
+
         <div
           role="tablist"
           aria-label="Filtrar por categoría"
@@ -92,18 +94,20 @@ function CatalogPage() {
                   >
                     {CATEGORY_LABEL[m.category]}
                   </Badge>
-                  <Badge 
+                  <Badge
                     variant="outline"
                     className={
-                      m.status === "Disponible" 
-                        ? "border-emerald-500/30 bg-emerald-500/10 text-emerald-600 shadow-sm" 
+                      m.status === "Disponible"
+                        ? "border-emerald-500/30 bg-emerald-500/10 text-emerald-600 shadow-sm"
                         : "border-amber-500/30 bg-amber-500/10 text-amber-600 shadow-sm"
                     }
                   >
                     {m.status}
                   </Badge>
                 </div>
-                <CardTitle className="text-xl font-bold tracking-tight line-clamp-1">{m.name}</CardTitle>
+                <CardTitle className="text-xl font-bold tracking-tight line-clamp-1">
+                  {m.name}
+                </CardTitle>
                 <div className="flex items-center text-sm font-medium text-muted-foreground mt-2 bg-secondary/40 w-fit px-2.5 py-1 rounded-md border border-border/50">
                   <Package className="w-4 h-4 mr-1.5 opacity-70" />
                   Stock: <span className="ml-1 text-foreground font-semibold">{m.stock} uds.</span>
@@ -116,9 +120,9 @@ function CatalogPage() {
                 <Link
                   to="/solicitar/$id"
                   params={{ id: m.id }}
-                  className={buttonVariants({ 
+                  className={buttonVariants({
                     className: "w-full font-semibold shadow-sm transition-all hover:shadow-md",
-                    size: "lg"
+                    size: "lg",
                   })}
                 >
                   Solicitar recurso

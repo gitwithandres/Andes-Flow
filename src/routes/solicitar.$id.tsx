@@ -50,7 +50,9 @@ function RequestPage() {
   const { id } = Route.useParams();
   const material = getMaterial(id);
   const [errors, setErrors] = useState<FieldErrors>({});
-  const [invoiceInfo, setInvoiceInfo] = useState<{ number: string; simulated: boolean } | null>(null);
+  const [invoiceInfo, setInvoiceInfo] = useState<{ number: string; simulated: boolean } | null>(
+    null,
+  );
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isDownloading, setIsDownloading] = useState(false);
 
@@ -90,40 +92,46 @@ function RequestPage() {
       return;
     }
     setErrors({});
-    
+
     try {
       setIsSubmitting(true);
-      
+
       // Integramos Factus para generar factura electrónica
       const token = await getFactusToken();
       const invoiceData = await createFactusInvoice(token, parsed.data, material);
-      
-      const reqId = invoiceData.number.startsWith('SIMULADA') ? `SOL-${Math.floor(Math.random() * 10000).toString().padStart(4, '0')}` : invoiceData.number;
-      
-      const { error: dbError } = await supabase.from('production_requests').insert([{
-        id: reqId,
-        institution: "Compra Online - " + parsed.data.fullName,
-        resource: material!.name,
-        quantity: 1,
-        date: new Date().toISOString().split('T')[0],
-        responsible: parsed.data.fullName,
-        priority: "Media",
-        status: "Recibida",
-        progress_percentage: 0
-      }]);
+
+      const reqId = invoiceData.number.startsWith("SIMULADA")
+        ? `SOL-${Math.floor(Math.random() * 10000)
+            .toString()
+            .padStart(4, "0")}`
+        : invoiceData.number;
+
+      const { error: dbError } = await supabase.from("production_requests").insert([
+        {
+          id: reqId,
+          institution: "Compra Online - " + parsed.data.fullName,
+          resource: material!.name,
+          quantity: 1,
+          date: new Date().toISOString().split("T")[0],
+          responsible: parsed.data.fullName,
+          priority: "Media",
+          status: "Recibida",
+          progress_percentage: 0,
+        },
+      ]);
 
       if (dbError) {
         console.error("Supabase Error:", dbError);
         // Continuamos para no bloquear al usuario, ya que la factura sí se generó
       }
-      
+
       setInvoiceInfo({ number: reqId, simulated: invoiceData.simulated || false });
       toast.success("Factura y solicitud generadas correctamente", {
-        description: "Hemos recibido tus datos y procesado la factura electrónica con éxito."
+        description: "Hemos recibido tus datos y procesado la factura electrónica con éxito.",
       });
     } catch (error) {
       toast.error("Error al procesar la solicitud", {
-        description: "Hubo un problema comunicándose con el servicio de facturación."
+        description: "Hubo un problema comunicándose con el servicio de facturación.",
       });
     } finally {
       setIsSubmitting(false);
@@ -132,18 +140,17 @@ function RequestPage() {
 
   async function handleDownloadPdf() {
     if (!invoiceInfo) return;
-    
+
     try {
       setIsDownloading(true);
-      
+
       const token = await getFactusToken();
       const base64Pdf = await downloadFactusPdf(token, invoiceInfo.number);
-      
+
       if (!base64Pdf) {
         throw new Error("PDF no disponible");
-
       }
-      
+
       // Decodificar Base64 a Blob y descargar
       const byteCharacters = atob(base64Pdf);
       const byteNumbers = new Array(byteCharacters.length);
@@ -151,15 +158,16 @@ function RequestPage() {
         byteNumbers[i] = byteCharacters.charCodeAt(i);
       }
       const byteArray = new Uint8Array(byteNumbers);
-      const blob = new Blob([byteArray], {type: "application/pdf"});
-      
-      const link = document.createElement('a');
+      const blob = new Blob([byteArray], { type: "application/pdf" });
+
+      const link = document.createElement("a");
       link.href = window.URL.createObjectURL(blob);
       link.download = `Factura_${invoiceInfo.number}.pdf`;
       link.click();
-      
     } catch (error) {
-      toast.error("Error de descarga", { description: "Hubo un error al intentar descargar el PDF de la factura." });
+      toast.error("Error de descarga", {
+        description: "Hubo un error al intentar descargar el PDF de la factura.",
+      });
     } finally {
       setIsDownloading(false);
     }
@@ -171,29 +179,51 @@ function RequestPage() {
         <div className="inline-flex h-20 w-20 items-center justify-center rounded-full bg-emerald-500/10 mb-6">
           <CheckCircle2 className="h-10 w-10 text-emerald-600" aria-hidden />
         </div>
-        <h1 className="text-3xl font-extrabold text-foreground tracking-tight">¡Solicitud y Factura registradas!</h1>
+        <h1 className="text-3xl font-extrabold text-foreground tracking-tight">
+          ¡Solicitud y Factura registradas!
+        </h1>
         <p className="mt-4 text-lg text-muted-foreground">
-          Gracias por confiar en ANDES. Hemos reservado el material y procesado tu solicitud de facturación. Un miembro del equipo se pondrá en contacto contigo pronto.
+          Gracias por confiar en ANDES. Hemos reservado el material y procesado tu solicitud de
+          facturación. Un miembro del equipo se pondrá en contacto contigo pronto.
         </p>
         <div className="mt-6 bg-muted/50 border border-border p-4 rounded-xl inline-block text-left">
-          <p className="text-sm font-semibold text-muted-foreground uppercase tracking-wider mb-1">ID de Seguimiento</p>
+          <p className="text-sm font-semibold text-muted-foreground uppercase tracking-wider mb-1">
+            ID de Seguimiento
+          </p>
           <div className="flex items-center gap-3">
             <span className="text-2xl font-mono font-black text-primary">{invoiceInfo.number}</span>
             <Button variant="outline" size="sm" asChild className="h-8 shadow-sm">
               <Link to="/seguimiento">Rastrear Pedido</Link>
             </Button>
           </div>
-          <p className="text-xs text-muted-foreground mt-2">Guarda este código para consultar el estado de fabricación.</p>
+          <p className="text-xs text-muted-foreground mt-2">
+            Guarda este código para consultar el estado de fabricación.
+          </p>
         </div>
         <div className="mt-8 flex flex-col sm:flex-row justify-center gap-4">
-          <Button onClick={handleDownloadPdf} size="lg" disabled={isDownloading} className="font-semibold shadow-sm text-sm">
-            {isDownloading ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : <FileText className="w-4 h-4 mr-2" />}
+          <Button
+            onClick={handleDownloadPdf}
+            size="lg"
+            disabled={isDownloading}
+            className="font-semibold shadow-sm text-sm"
+          >
+            {isDownloading ? (
+              <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+            ) : (
+              <FileText className="w-4 h-4 mr-2" />
+            )}
             Descargar Factura PDF
           </Button>
-          <Link to="/catalogo" className={buttonVariants({ variant: "outline", size: "lg", className: "text-sm" })}>
+          <Link
+            to="/catalogo"
+            className={buttonVariants({ variant: "outline", size: "lg", className: "text-sm" })}
+          >
             Explorar más
           </Link>
-          <Link to="/admin" className={buttonVariants({ variant: "outline", size: "lg", className: "text-sm" })}>
+          <Link
+            to="/admin"
+            className={buttonVariants({ variant: "outline", size: "lg", className: "text-sm" })}
+          >
             Ver panel
           </Link>
         </div>
@@ -240,21 +270,24 @@ function RequestPage() {
               >
                 {CATEGORY_LABEL[material.category]}
               </Badge>
-              <Badge 
+              <Badge
                 variant="outline"
                 className={
-                  material.status === "Disponible" 
-                    ? "border-emerald-500/30 bg-emerald-500/10 text-emerald-600 shadow-sm text-sm py-1 px-3" 
+                  material.status === "Disponible"
+                    ? "border-emerald-500/30 bg-emerald-500/10 text-emerald-600 shadow-sm text-sm py-1 px-3"
                     : "border-amber-500/30 bg-amber-500/10 text-amber-600 shadow-sm text-sm py-1 px-3"
                 }
               >
                 {material.status}
               </Badge>
             </div>
-            <CardTitle className="text-3xl font-extrabold tracking-tight text-foreground">{material.name}</CardTitle>
+            <CardTitle className="text-3xl font-extrabold tracking-tight text-foreground">
+              {material.name}
+            </CardTitle>
             <div className="flex items-center text-sm font-medium text-muted-foreground mt-4 bg-secondary/40 w-fit px-3 py-1.5 rounded-md border border-border/50">
               <Package className="w-4 h-4 mr-2 opacity-70" />
-              Stock disponible: <span className="ml-1 text-foreground font-semibold">{material.stock} uds.</span>
+              Stock disponible:{" "}
+              <span className="ml-1 text-foreground font-semibold">{material.stock} uds.</span>
             </div>
           </CardHeader>
           <CardContent className="text-base text-muted-foreground leading-relaxed pb-8">
@@ -265,8 +298,12 @@ function RequestPage() {
         <div className="space-y-6">
           <Card className="border-border/40 bg-background/60 backdrop-blur-md shadow-sm sticky top-24">
             <CardHeader className="pb-4">
-              <CardTitle className="text-2xl font-bold tracking-tight">Detalles de la solicitud</CardTitle>
-              <p className="text-sm text-muted-foreground mt-1">Completa tus datos para procesar el envío o reserva del material.</p>
+              <CardTitle className="text-2xl font-bold tracking-tight">
+                Detalles de la solicitud
+              </CardTitle>
+              <p className="text-sm text-muted-foreground mt-1">
+                Completa tus datos para procesar el envío o reserva del material.
+              </p>
             </CardHeader>
             <CardContent>
               <form onSubmit={onSubmit} noValidate className="grid gap-5">
@@ -316,10 +353,24 @@ function RequestPage() {
                   required
                 />
                 <div className="pt-2">
-                  <Label className="text-xs text-muted-foreground uppercase tracking-wider font-semibold">Producto seleccionado</Label>
-                  <Input value={material.name} readOnly aria-readonly className="mt-1.5 bg-secondary/50 border-dashed text-foreground/80 font-medium cursor-default focus-visible:ring-0" />
+                  <Label className="text-xs text-muted-foreground uppercase tracking-wider font-semibold">
+                    Producto seleccionado
+                  </Label>
+                  <Input
+                    value={material.name}
+                    readOnly
+                    aria-readonly
+                    className="mt-1.5 bg-secondary/50 border-dashed text-foreground/80 font-medium cursor-default focus-visible:ring-0"
+                  />
                 </div>
-                <Button type="submit" size="lg" className="mt-4 w-full font-bold shadow-md transition-all hover:shadow-lg hover:-translate-y-0.5" disabled={(material.status !== "Disponible" && material.stock <= 0) || isSubmitting}>
+                <Button
+                  type="submit"
+                  size="lg"
+                  className="mt-4 w-full font-bold shadow-md transition-all hover:shadow-lg hover:-translate-y-0.5"
+                  disabled={
+                    (material.status !== "Disponible" && material.stock <= 0) || isSubmitting
+                  }
+                >
                   {isSubmitting ? (
                     <>
                       <Loader2 className="mr-2 h-4 w-4 animate-spin" />
@@ -327,7 +378,9 @@ function RequestPage() {
                     </>
                   ) : (
                     <>
-                      {material.stock > 0 ? "Enviar solicitud y facturar" : "Sin unidades disponibles"}
+                      {material.stock > 0
+                        ? "Enviar solicitud y facturar"
+                        : "Sin unidades disponibles"}
                       {material.stock > 0 && <Send className="w-4 h-4 ml-2" />}
                     </>
                   )}
@@ -351,7 +404,9 @@ function Field({ id, label, error, ...rest }: FieldProps) {
   const describedBy = error ? `${id}-error` : undefined;
   return (
     <div className="space-y-1.5">
-      <Label htmlFor={id} className="font-semibold text-foreground/90">{label}</Label>
+      <Label htmlFor={id} className="font-semibold text-foreground/90">
+        {label}
+      </Label>
       <Input
         id={id}
         name={id}

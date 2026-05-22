@@ -12,10 +12,10 @@ export function InteractiveViewer({ material }: Props) {
     <Dialog>
       <div className="relative h-full w-full group/viewer bg-linear-to-b from-secondary/30 to-secondary/80 overflow-hidden">
         <div className="absolute inset-0 pointer-events-none shadow-[inset_0_-10px_20px_rgba(0,0,0,0.03)] z-10" />
-        
+
         {/* Fullscreen Button Trigger */}
         <DialogTrigger asChild>
-          <button 
+          <button
             className="absolute top-3 right-3 z-20 p-2.5 bg-background/80 backdrop-blur-md rounded-full shadow-sm opacity-0 group-hover/viewer:opacity-100 focus:opacity-100 transition-all duration-300 hover:bg-background hover:scale-110 border border-border/50"
             aria-label="Ver en pantalla completa"
           >
